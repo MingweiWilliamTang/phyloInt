@@ -1,0 +1,24 @@
+Package: phyloInt
+Type: Package
+Title: Stochastic Epidemic model using integration data
+Version: 0.1.0
+Author: Mingwei Tang
+Maintainer: Mingwei Tang <mingwt@uw.edu>
+Description: Stochastic Epidemic model using the integration of genealogy and other source of information (incidence, sampling time)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+LinkingTo: Rcpp,RcppArmadillo
+Depends:
+    R (>= 3.1.0), Rcpp, RcppArmadillo, abind, smfsb, MASS
+RcppModules: mod_Foo
+Imports:
+    Rcpp,
+    RcppArmadillo,
+    Matrix,
+    abind,
+    smfsb,
+    Matrix,
+    graphics,
+    stats,
+    MASS
