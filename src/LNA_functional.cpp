@@ -1311,8 +1311,8 @@ double volz_loglik_nh_adj(List init, arma::mat f1, arma::vec betaN, double t_cor
   double res = 0;
   if(enable){
     int p = f1.n_cols - 1; // 3
-    int n0 = as<int>(init[9]) - 1; // 37
-    int nstart = as<int>(init[13]) - 1; //
+    int n0 = as<int>(init[9]) - 2; // 37
+    int nstart = as<int>(init[13]) - 2; //
     //while(f1(L,0) < t_correct){
     //  L ++;
     //  if(L == n2 - 1) break;
