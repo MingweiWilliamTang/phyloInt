@@ -268,11 +268,6 @@ Update_incidence_Pars = function(MCMC_setting, MCMC_obj,update=c(1,1),joint = F)
 
     IncidLog_new = log_incidence(MCMC_obj$LatentTraj, MCMC_setting$Incidence, Incid_Par = incid_par_new,F,T)
 
-    #pr_diff = dgamma(t_new,MCMC_setting$prior$rho_pr[1],MCMC_setting$prior$rho_pr[2],log = T) -
-    #  dgamma(t_old,MCMC_setting$prior$rho_pr[1],MCMC_setting$prior$rho_pr[2],log = T) +
-    #  dnorm(t_new2,MCMC_setting$prior$phi_pr[1],MCMC_setting$prior$phi_pr[2],log = T) -
-    #  dnorm(t_old2,MCMC_setting$prior$phi_pr[1],MCMC_setting$prior$phi_pr[2],log = T)
-
     pr_diff = dnorm(t_new,MCMC_setting$prior$rho_pr[1],MCMC_setting$prior$rho_pr[2],log = T) -
       dnorm(t_old,MCMC_setting$prior$rho_pr[1],MCMC_setting$prior$rho_pr[2],log = T) +
       dnorm(t_new2,MCMC_setting$prior$phi_pr[1],MCMC_setting$prior$phi_pr[2],log = T) -
@@ -471,6 +466,24 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
     l3[i] = MCMC_obj$IncidLog
   }
   return(list(par = params, incid_par = params_incid, Trajectory = tjs,l=l,l1=l1,l3 = l3, MX = MCMC_setting$PCOV, MCMC_setting = MCMC_setting, MCMC_obj = MCMC_obj))
+}
+
+log_post = function(MCMC_res, pref = F, incid = F){
+  MCMC_setting = MCMC_res$MCMC_setting
+  res = MCMC_res$l + MCMC_res$l1 + MCMC_res$l3
+  d = dim(MCMC_res$par)[2]
+  logpar = sapply(MCMC_res$par[,3],function(x) return(dlnorm(x, MCMC_setting$prior$R0_pr[1], MCMC_setting$prior$R0_pr[2], log = T))) +
+    sapply(MCMC_res$par[,4],function(x) return(dlnorm(x, MCMC_setting$prior$gamma_pr[1], MCMC_setting$prior$gamma_pr[2], log = T))) +
+    sapply(MCMC_res$par[,d],function(x) return(dlnorm(x, MCMC_setting$prior$hyper_pr[1], MCMC_setting$prior$hyper_pr[2], log = T)))
+  if(incid){
+    logpar = logpar + sapply(MCMC_res$incid_par[,1],function(x) return(dnorm(sigmoid_inv(x), MCMC_setting$prior$rho_pr[1], MCMC_setting$prior$rho_pr[2], log = T))) +
+      sapply(MCMC_res$incid_par[,2],function(x) return(dlnorm(x, MCMC_setting$prior$phi_pr[1], MCMC_setting$prior$phi_pr[2], log = T)))
+  }
+  if(pref){
+    logpar = logpar + sapply(MCMC_res$pref_par[,1],function(x) return(dnorm(x, MCMC_setting$prior$a_pr[1], MCMC_setting$prior$a_pr[2], log = T))) +
+      sapply(MCMC_res$pref_par[,2],function(x) return(dnorm(x, MCMC_setting$prior$b_pr[1], MCMC_setting$prior$b_pr[2], log = T)))
+  }
+  return(logpar + res)
 }
 ####################
 
