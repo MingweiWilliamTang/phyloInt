@@ -40,7 +40,7 @@ MCMC_setup_Joint_Inference = function(tree,raw_incidence_obs, times,t_correct,N,
     coal_obs = summarize_phylo(tree)
   }
   Init = coal_lik_init(coal_obs$samp_times, coal_obs$n_sampled, coal_obs$coal_times, grid,t_correct)
-  grid = grid[grid <= cut_times]
+  grid = grid[1:(sum(grid < cut_times) + 1)]
   n = dim(raw_incidence_obs)[1]
   i = 1
   k = 2
