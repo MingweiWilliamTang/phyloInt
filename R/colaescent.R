@@ -402,15 +402,15 @@ coal_lik_init = function(samp_times, n_sampled, coal_times, grid, t_correct = NU
   ng = temp
   if(gridOrigin[ng] - max(gridOrigin) + min(samp_times) < 0)
     stop("wrong with the grid setup")
-  if(gridrep[length(gridrep)] == 0){
-    gridrep = head(gridrep,-1)
-    gridstart = gridstart + 1
-  }
+ # if(gridrep[length(gridrep)] == 0){
+#    gridrep = head(gridrep,-1)
+#    gridstart = gridstart + 1
+#  }
 
-  if(gridstart > 1){
-    gridstart = gridstart - 1
-    ng = ng - 1
-  }
+#  if(gridstart > 1){
+#    gridstart = gridstart - 1
+#    ng = ng - 1
+#  }
   return(list(t=t, l=l, C=C, D=D, y=y, count=count, gridrep=gridrep,
               ns=sum(n_sampled), nc=nc, ng=ng, rep_idx=rep_idx,
               args=list(samp_times=samp_times, n_sampled=n_sampled, coal_times=coal_times,
