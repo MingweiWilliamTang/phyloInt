@@ -420,7 +420,7 @@ coal_lik_init = function(samp_times, n_sampled, coal_times, grid, t_correct = NU
 
 
 
-preferential_lik_init = function(grid, samp_times, n_sampled, t_correct, gdiff = 1, g_start = NULL, g_end = NULL){
+preferential_lik_init = function(grid, samp_times, n_sampled, t_correct, gdiff = 1, g_start = NULL, g_end = NULL,incidPref){
   samp_times = samp_times+t_correct
   l = length(grid)
   grid2 = max(grid) - rev(grid)
@@ -452,7 +452,7 @@ preferential_lik_init = function(grid, samp_times, n_sampled, t_correct, gdiff =
   if(sample_cout[1] == 0){
     sample_cout = sample_cout[-1]
   }
-  ####
+  ####y
   times = grid[g_idx]
   if(is.null(g_start)){
     g_start = min(times)
@@ -465,7 +465,6 @@ preferential_lik_init = function(grid, samp_times, n_sampled, t_correct, gdiff =
   g_idx = g_idx[n_idx]
   sample_cout = sample_cout[n_idx[-length(n_idx)]]
   ####
-
   #return(list(sample_cout = sample_cout, g_idx = g_idx - 1, time = grid[g_idx],bound = max(g_idx)))
   return(list(sample_cout = sample_cout, g_idx = g_idx - 1, time = times, bound = max(g_idx)))
 }

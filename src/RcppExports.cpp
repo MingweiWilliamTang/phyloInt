@@ -548,8 +548,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // log_prev
-double log_prev(arma::mat Traj, List& SampleInit, arma::vec Pref_par, bool Pois, bool enable);
-RcppExport SEXP _phyloInt_log_prev(SEXP TrajSEXP, SEXP SampleInitSEXP, SEXP Pref_parSEXP, SEXP PoisSEXP, SEXP enableSEXP) {
+double log_prev(arma::mat Traj, List& SampleInit, arma::vec Pref_par, bool Pois, bool enable, bool incidPref);
+RcppExport SEXP _phyloInt_log_prev(SEXP TrajSEXP, SEXP SampleInitSEXP, SEXP Pref_parSEXP, SEXP PoisSEXP, SEXP enableSEXP, SEXP incidPrefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -558,7 +558,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type Pref_par(Pref_parSEXP);
     Rcpp::traits::input_parameter< bool >::type Pois(PoisSEXP);
     Rcpp::traits::input_parameter< bool >::type enable(enableSEXP);
-    rcpp_result_gen = Rcpp::wrap(log_prev(Traj, SampleInit, Pref_par, Pois, enable));
+    Rcpp::traits::input_parameter< bool >::type incidPref(incidPrefSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_prev(Traj, SampleInit, Pref_par, Pois, enable, incidPref));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -895,8 +896,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // Update_Param_Pref
-List Update_Param_Pref(arma::vec param, arma::vec initial, arma::vec pref_par, arma::vec t, arma::mat OriginTraj, arma::vec x_r, arma::ivec x_i, List init, List SampleInit, int gridsize, double coal_log, double pref_log, double prior_proposal_offset, double t_correct, std::string transP, std::string model, std::string transX, bool volz, bool addCoal, bool addPref);
-RcppExport SEXP _phyloInt_Update_Param_Pref(SEXP paramSEXP, SEXP initialSEXP, SEXP pref_parSEXP, SEXP tSEXP, SEXP OriginTrajSEXP, SEXP x_rSEXP, SEXP x_iSEXP, SEXP initSEXP, SEXP SampleInitSEXP, SEXP gridsizeSEXP, SEXP coal_logSEXP, SEXP pref_logSEXP, SEXP prior_proposal_offsetSEXP, SEXP t_correctSEXP, SEXP transPSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP volzSEXP, SEXP addCoalSEXP, SEXP addPrefSEXP) {
+List Update_Param_Pref(arma::vec param, arma::vec initial, arma::vec pref_par, arma::vec t, arma::mat OriginTraj, arma::vec x_r, arma::ivec x_i, List init, List SampleInit, int gridsize, double coal_log, double pref_log, double prior_proposal_offset, double t_correct, std::string transP, std::string model, std::string transX, bool volz, bool addCoal, bool addPref, bool incidPref);
+RcppExport SEXP _phyloInt_Update_Param_Pref(SEXP paramSEXP, SEXP initialSEXP, SEXP pref_parSEXP, SEXP tSEXP, SEXP OriginTrajSEXP, SEXP x_rSEXP, SEXP x_iSEXP, SEXP initSEXP, SEXP SampleInitSEXP, SEXP gridsizeSEXP, SEXP coal_logSEXP, SEXP pref_logSEXP, SEXP prior_proposal_offsetSEXP, SEXP t_correctSEXP, SEXP transPSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP volzSEXP, SEXP addCoalSEXP, SEXP addPrefSEXP, SEXP incidPrefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -920,13 +921,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type volz(volzSEXP);
     Rcpp::traits::input_parameter< bool >::type addCoal(addCoalSEXP);
     Rcpp::traits::input_parameter< bool >::type addPref(addPrefSEXP);
-    rcpp_result_gen = Rcpp::wrap(Update_Param_Pref(param, initial, pref_par, t, OriginTraj, x_r, x_i, init, SampleInit, gridsize, coal_log, pref_log, prior_proposal_offset, t_correct, transP, model, transX, volz, addCoal, addPref));
+    Rcpp::traits::input_parameter< bool >::type incidPref(incidPrefSEXP);
+    rcpp_result_gen = Rcpp::wrap(Update_Param_Pref(param, initial, pref_par, t, OriginTraj, x_r, x_i, init, SampleInit, gridsize, coal_log, pref_log, prior_proposal_offset, t_correct, transP, model, transX, volz, addCoal, addPref, incidPref));
     return rcpp_result_gen;
 END_RCPP
 }
 // ESlice_par_General_pref
-List ESlice_par_General_pref(arma::vec par_old, arma::vec pref_par, arma::vec t, arma::mat OriginTraj, List priorList, arma::vec x_r, arma::ivec x_i, List init, List SampleInit, int gridsize, arma::ivec ESS_vec, double coal_log, double pref_log, double t_correct, std::string transP, std::string model, std::string transX, bool volz, bool addCoal, bool addPref);
-RcppExport SEXP _phyloInt_ESlice_par_General_pref(SEXP par_oldSEXP, SEXP pref_parSEXP, SEXP tSEXP, SEXP OriginTrajSEXP, SEXP priorListSEXP, SEXP x_rSEXP, SEXP x_iSEXP, SEXP initSEXP, SEXP SampleInitSEXP, SEXP gridsizeSEXP, SEXP ESS_vecSEXP, SEXP coal_logSEXP, SEXP pref_logSEXP, SEXP t_correctSEXP, SEXP transPSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP volzSEXP, SEXP addCoalSEXP, SEXP addPrefSEXP) {
+List ESlice_par_General_pref(arma::vec par_old, arma::vec pref_par, arma::vec t, arma::mat OriginTraj, List priorList, arma::vec x_r, arma::ivec x_i, List init, List SampleInit, int gridsize, arma::ivec ESS_vec, double coal_log, double pref_log, double t_correct, std::string transP, std::string model, std::string transX, bool volz, bool addCoal, bool addPref, bool incidPref);
+RcppExport SEXP _phyloInt_ESlice_par_General_pref(SEXP par_oldSEXP, SEXP pref_parSEXP, SEXP tSEXP, SEXP OriginTrajSEXP, SEXP priorListSEXP, SEXP x_rSEXP, SEXP x_iSEXP, SEXP initSEXP, SEXP SampleInitSEXP, SEXP gridsizeSEXP, SEXP ESS_vecSEXP, SEXP coal_logSEXP, SEXP pref_logSEXP, SEXP t_correctSEXP, SEXP transPSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP volzSEXP, SEXP addCoalSEXP, SEXP addPrefSEXP, SEXP incidPrefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -950,13 +952,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type volz(volzSEXP);
     Rcpp::traits::input_parameter< bool >::type addCoal(addCoalSEXP);
     Rcpp::traits::input_parameter< bool >::type addPref(addPrefSEXP);
-    rcpp_result_gen = Rcpp::wrap(ESlice_par_General_pref(par_old, pref_par, t, OriginTraj, priorList, x_r, x_i, init, SampleInit, gridsize, ESS_vec, coal_log, pref_log, t_correct, transP, model, transX, volz, addCoal, addPref));
+    Rcpp::traits::input_parameter< bool >::type incidPref(incidPrefSEXP);
+    rcpp_result_gen = Rcpp::wrap(ESlice_par_General_pref(par_old, pref_par, t, OriginTraj, priorList, x_r, x_i, init, SampleInit, gridsize, ESS_vec, coal_log, pref_log, t_correct, transP, model, transX, volz, addCoal, addPref, incidPref));
     return rcpp_result_gen;
 END_RCPP
 }
 // ESlice_general_NC_pref
-List ESlice_general_NC_pref(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::vec state, arma::vec pref_par, List init, List SampleInit, arma::vec betaN, double t_correct, double lambda, double coal_log, double PrefLog, int gridsize, bool volz, std::string model, std::string transX, bool addCoal, bool addPref);
-RcppExport SEXP _phyloInt_ESlice_general_NC_pref(SEXP f_curSEXP, SEXP OdeTrajSEXP, SEXP FTsSEXP, SEXP stateSEXP, SEXP pref_parSEXP, SEXP initSEXP, SEXP SampleInitSEXP, SEXP betaNSEXP, SEXP t_correctSEXP, SEXP lambdaSEXP, SEXP coal_logSEXP, SEXP PrefLogSEXP, SEXP gridsizeSEXP, SEXP volzSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP addCoalSEXP, SEXP addPrefSEXP) {
+List ESlice_general_NC_pref(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::vec state, arma::vec pref_par, List init, List SampleInit, arma::vec betaN, double t_correct, double lambda, double coal_log, double PrefLog, int gridsize, bool volz, std::string model, std::string transX, bool addCoal, bool addPref, bool incidPref);
+RcppExport SEXP _phyloInt_ESlice_general_NC_pref(SEXP f_curSEXP, SEXP OdeTrajSEXP, SEXP FTsSEXP, SEXP stateSEXP, SEXP pref_parSEXP, SEXP initSEXP, SEXP SampleInitSEXP, SEXP betaNSEXP, SEXP t_correctSEXP, SEXP lambdaSEXP, SEXP coal_logSEXP, SEXP PrefLogSEXP, SEXP gridsizeSEXP, SEXP volzSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP addCoalSEXP, SEXP addPrefSEXP, SEXP incidPrefSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -978,7 +981,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< std::string >::type transX(transXSEXP);
     Rcpp::traits::input_parameter< bool >::type addCoal(addCoalSEXP);
     Rcpp::traits::input_parameter< bool >::type addPref(addPrefSEXP);
-    rcpp_result_gen = Rcpp::wrap(ESlice_general_NC_pref(f_cur, OdeTraj, FTs, state, pref_par, init, SampleInit, betaN, t_correct, lambda, coal_log, PrefLog, gridsize, volz, model, transX, addCoal, addPref));
+    Rcpp::traits::input_parameter< bool >::type incidPref(incidPrefSEXP);
+    rcpp_result_gen = Rcpp::wrap(ESlice_general_NC_pref(f_cur, OdeTraj, FTs, state, pref_par, init, SampleInit, betaN, t_correct, lambda, coal_log, PrefLog, gridsize, volz, model, transX, addCoal, addPref, incidPref));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -1020,7 +1024,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_phyloInt_SIR_incidence_Traj", (DL_FUNC) &_phyloInt_SIR_incidence_Traj, 2},
     {"_phyloInt_log_pref", (DL_FUNC) &_phyloInt_log_pref, 5},
     {"_phyloInt_SIR_Traj", (DL_FUNC) &_phyloInt_SIR_Traj, 2},
-    {"_phyloInt_log_prev", (DL_FUNC) &_phyloInt_log_prev, 5},
+    {"_phyloInt_log_prev", (DL_FUNC) &_phyloInt_log_prev, 6},
     {"_phyloInt_log_incidence_approx", (DL_FUNC) &_phyloInt_log_incidence_approx, 6},
     {"_phyloInt_New_Param_List", (DL_FUNC) &_phyloInt_New_Param_List, 9},
     {"_phyloInt_Update_Param", (DL_FUNC) &_phyloInt_Update_Param, 15},
@@ -1036,9 +1040,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_phyloInt_Update_Param_JointData", (DL_FUNC) &_phyloInt_Update_Param_JointData, 20},
     {"_phyloInt_ESlice_par_General_JointData", (DL_FUNC) &_phyloInt_ESlice_par_General_JointData, 20},
     {"_phyloInt_ESlice_general_NC_joint", (DL_FUNC) &_phyloInt_ESlice_general_NC_joint, 18},
-    {"_phyloInt_Update_Param_Pref", (DL_FUNC) &_phyloInt_Update_Param_Pref, 20},
-    {"_phyloInt_ESlice_par_General_pref", (DL_FUNC) &_phyloInt_ESlice_par_General_pref, 20},
-    {"_phyloInt_ESlice_general_NC_pref", (DL_FUNC) &_phyloInt_ESlice_general_NC_pref, 18},
+    {"_phyloInt_Update_Param_Pref", (DL_FUNC) &_phyloInt_Update_Param_Pref, 21},
+    {"_phyloInt_ESlice_par_General_pref", (DL_FUNC) &_phyloInt_ESlice_par_General_pref, 21},
+    {"_phyloInt_ESlice_general_NC_pref", (DL_FUNC) &_phyloInt_ESlice_general_NC_pref, 19},
     {NULL, NULL, 0}
 };
 

@@ -101,7 +101,7 @@ Update_Param_pref_each_Norm = function(MCMC_obj, MCMC_setting, parIdlist, isLogl
       update_res = Update_Param_Pref(param_new, initial_new, MCMC_obj$pref_par, MCMC_setting$times, MCMC_obj$OriginTraj,
                                           MCMC_setting$x_r, MCMC_setting$x_i, MCMC_setting$Init, MCMC_setting$SampleInit, MCMC_setting$gridsize, MCMC_obj$coalLog,MCMC_obj$PrefLog,prior_proposal_offset,
                                           MCMC_setting$t_correct, model = MCMC_setting$model,
-                                          volz = MCMC_setting$likelihood == "volz", addCoal = enable[1], addPref = enable[2])
+                                          volz = MCMC_setting$likelihood == "volz", addCoal = enable[1], addPref = enable[2],incidPref = MCMC_setting$incidPref)
     }else{
       update_res = Update_Param(param_new, initial_new, MCMC_setting$times, MCMC_obj$OriginTraj,
                                 MCMC_setting$x_r, MCMC_setting$x_i, MCMC_setting$Init, MCMC_setting$gridsize, MCMC_obj$coalLog,prior_proposal_offset,
@@ -136,7 +136,7 @@ update_Par_ESlice_combine3 = function(MCMC_obj, MCMC_setting, priorList, ESS_vec
   ESlice_Result = ESlice_par_General_pref(MCMC_obj$par, MCMC_obj$pref_par, MCMC_setting$times, MCMC_obj$OriginTraj,
                                                priorList, MCMC_setting$x_r, MCMC_setting$x_i, MCMC_setting$Init, MCMC_setting$SampleInit,
                                                MCMC_setting$gridsize, ESS_vec, coal_log = MCMC_obj$coalLog, pref_log = MCMC_obj$PrefLog, MCMC_setting$t_correct,
-                                               addCoal = enable[1],addPref = enable[2])
+                                               addCoal = enable[1],addPref = enable[2], incidPref = MCMC_setting$incidPref)
   MCMC_obj$par = ESlice_Result$par
   MCMC_obj$LatentTraj = ESlice_Result$LatentTraj
   MCMC_obj$betaN = ESlice_Result$betaN
@@ -176,7 +176,7 @@ updateTraj_general_NC2 = function(MCMC_obj,MCMC_setting,i, pref = F, enable = c(
                                     betaN = betaTs(MCMC_obj$par[(MCMC_obj$p+1):(MCMC_setting$x_i[1]+MCMC_setting$x_i[2]+MCMC_obj$p)],MCMC_obj$LatentTraj[,1], MCMC_setting$x_r,MCMC_setting$x_i),
                                     MCMC_setting$t_correct,lambda = 1,
                                     coal_log = MCMC_obj$coalLog, PrefLog = MCMC_obj$PrefLog, MCMC_setting$gridsize,
-                                    volz = (MCMC_setting$likelihood == "volz"), model = MCMC_setting$model,addCoal = enable[1], addPref = enable[2])
+                                    volz = (MCMC_setting$likelihood == "volz"), model = MCMC_setting$model,addCoal = enable[1], addPref = enable[2], incidPref = MCMC_setting$incidPref)
 
     }else{
       Res = ESlice_general_NC(MCMC_obj$OriginTraj,MCMC_obj$Ode_Traj_coarse,
@@ -220,7 +220,8 @@ updateTraj_general_NC2 = function(MCMC_obj,MCMC_setting,i, pref = F, enable = c(
 MCMC_setup_Pref_Inference = function(tree,times,t_correct,N,gridsize=50,niter = 1000,burn = 500,thin = 5, changetime,DEMS = c("E", "I"),
                                       prior=list(pop_pr=c(1,10), R0_pr=c(1,7), mu_pr = c(3,0.2), gamma_pr = c(3,0.2), ch_pr = 1,hyper_pr=c(0.01,0.01)),
                                       proposal = list(pop_prop = 1, R0_prop = c(0.01), mu_prop=0.1, gamma_prop = 0.2, ch_prop=0.05),
-                                      control = list(), likelihood = "volz", model = "SIR", Index = c(0,1), nparam = 2,REAL = F, cut = list(start = NULL, end = NULL)){
+                                      control = list(), likelihood = "volz", model = "SIR", Index = c(0,1), nparam = 2,REAL = F, cut = list(start = NULL, end = NULL),
+                                     incidPref = FALSE){
 
   Times = min(times)
   for(i in 2:length(times)){
@@ -239,7 +240,7 @@ MCMC_setup_Pref_Inference = function(tree,times,t_correct,N,gridsize=50,niter = 
   }
 
   Init = coal_lik_init(coal_obs$samp_times, coal_obs$n_sampled, coal_obs$coal_times, grid,t_correct)
-  SampleInit = preferential_lik_init(grid, coal_obs$samp_times, coal_obs$n_sampled, t_correct,gdiff = 1, g_start = cut$start, g_end = cut$end)
+  SampleInit = preferential_lik_init(grid, coal_obs$samp_times, coal_obs$n_sampled, t_correct,gdiff = 1, g_start = cut$start, g_end = cut$end, incidPref)
 
   x_i = c(length(changetime),nparam,Index[1],Index[2])
   print("time grids")
@@ -247,7 +248,7 @@ MCMC_setup_Pref_Inference = function(tree,times,t_correct,N,gridsize=50,niter = 
   MCMC_setting = list(Init = Init, SampleInit = SampleInit, times = Times,t_correct = t_correct,x_r = c(N,changetime),
                       gridsize = gridsize,gridset = gridset, niter = niter,burn = burn,thin = thin,x_i = x_i,
                       prior = prior, proposal = proposal, control = control, p = length(DEMS),
-                      reps = 1, likelihood = likelihood, model = model)
+                      reps = 1, likelihood = likelihood, model = model, incidPref = incidPref)
   cat("MCMC set up ready \n")
 
   return(MCMC_setting)
@@ -360,7 +361,8 @@ MCMC_initialize_Pref = function(MCMC_setting, enable = c(T,T)){
     coalLog = volz_loglik_nh_adj(MCMC_setting$Init,LatentTraj,
                                  betaN, MCMC_setting$t_correct, MCMC_setting$x_i[3:4],enable = enable[1])
     #PrefLog = log_preverential(LatentTraj, MCMC_setting$SampleInit$SampleInit_obs, pref_par = pref_par)
-    PrefLog = log_prev(LatentTraj, MCMC_setting$SampleInit, pref_par, Pois = T,enable = enable[2])
+    PrefLog = log_prev(LatentTraj, MCMC_setting$SampleInit, pref_par, Pois = T,
+                       enable = enable[2], MCMC_setting$incidPref)
     print(paste("coalescent likelihood after initialization ", coalLog))
 
     if(!is.nan((coalLog))){
@@ -410,7 +412,8 @@ Update_Pref_Pars = function(MCMC_setting, MCMC_obj,update=c(1,1,0),joint = F){
     t_new2 = t_old2 + rnorm(1,0,MCMC_setting$proposal$pref_par_prop[3])
     pref_par_new[3] = exp(t_new2)
 
-    PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T)
+    PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T,
+                           MCMC_setting$incidPref)
 
     pr_diff = dnorm(t_new,MCMC_setting$prior$a_pr[1],MCMC_setting$prior$a_pr[2],log = T) -
       dnorm(t_old,MCMC_setting$prior$a_pr[1],MCMC_setting$prior$a_pr[2],log = T) +
@@ -432,7 +435,8 @@ Update_Pref_Pars = function(MCMC_setting, MCMC_obj,update=c(1,1,0),joint = F){
       t_new = t_old + rnorm(1,0,MCMC_setting$proposal$pref_par_prop[1])
       pref_par_new[1] = t_new
 
-      PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T)
+      PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T,
+                             MCMC_setting$incidPref)
 
       pr_diff = dnorm(t_new,MCMC_setting$prior$a_pr[1],MCMC_setting$prior$a_pr[2],log = T) -
         dnorm(t_old,MCMC_setting$prior$a_pr[1],MCMC_setting$prior$a_pr[2],log = T)
@@ -452,7 +456,8 @@ Update_Pref_Pars = function(MCMC_setting, MCMC_obj,update=c(1,1,0),joint = F){
       t_new = t_old + rnorm(1,0,MCMC_setting$proposal$pref_par_prop[2])
       pref_par_new[2] = t_new
 
-      PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T)
+      PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T,
+                             MCMC_setting$incidPref)
 
       pr_diff = dnorm(t_new, MCMC_setting$prior$b_pr[1],MCMC_setting$prior$b_pr[2],log = T) -
         dnorm(t_old, MCMC_setting$prior$b_pr[1],MCMC_setting$prior$b_pr[2],log = T)
@@ -473,7 +478,8 @@ Update_Pref_Pars = function(MCMC_setting, MCMC_obj,update=c(1,1,0),joint = F){
       t_new = t_old + rnorm(1,0,MCMC_setting$proposal$pref_par_prop[3])
       pref_par_new[3] = exp(t_new)
 
-      PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T)
+      PrefLog_new = log_prev(MCMC_obj$LatentTraj, MCMC_setting$SampleInit, pref_par_new,T,T,
+                             MCMC_setting$incidPref)
 
       pr_diff = dnorm(t_new, MCMC_setting$prior$phi_pr[1], MCMC_setting$prior$phi_pr[2], log = T) -
         dnorm(t_old, MCMC_setting$prior$phi_pr[1], MCMC_setting$prior$phi_pr[2], log = T)
@@ -497,11 +503,11 @@ General_MCMC_Pref_ESlice = function(coal_obs,times,t_correct,N,gridsize=1000, ni
                                          proposal = list(pop_prop = 0.5, R0_prop = c(0.01), mu_prop=0.1, gamma_prop = 0.2, hyper_prop=0.05),
                                          control = list(), ESS_vec = c(1,1,1,1,1,1,1),likelihood = "volz",model = "SIR",
                                          Index = c(0,2), nparam=2, method = "seq",options = list(joint = F, PCOV = NULL,beta = 0.05, burn1 = 5000,
-                                                                                                 parIdlist = NULL, priorIdlist = NULL,up = 2000, tune = 0.01, hyper = F), enable = c(T,T), REAL = F,verbose = T, cut = list(start = NULL, end = NULL)){
+                                                                                                 parIdlist = NULL, priorIdlist = NULL,up = 2000, tune = 0.01, hyper = F), enable = c(T,T), REAL = F,verbose = T, cut = list(start = NULL, end = NULL),incidPref = F){
 
   MCMC_setting = MCMC_setup_Pref_Inference(coal_obs, times,t_correct,N,gridsize,niter,burn,
                                             thin,changetime, DEMS,prior,proposal,
-                                            control,likelihood,model,Index,nparam, REAL = REAL, cut = cut)
+                                            control,likelihood,model,Index,nparam, REAL = REAL, cut = cut,incidPref = incidPref)
 
 
   p = MCMC_setting$p

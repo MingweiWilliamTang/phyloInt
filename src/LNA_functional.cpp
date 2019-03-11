@@ -1488,13 +1488,19 @@ arma::mat SIR_Traj(arma::mat Traj, arma::ivec gridrep){
 }
 
 //[[Rcpp::export()]]
-double log_prev(arma::mat Traj, List & SampleInit, arma::vec Pref_par, bool Pois = false, bool enable = true){
+double log_prev(arma::mat Traj, List & SampleInit, arma::vec Pref_par, bool Pois = false,
+                bool enable = true, bool incidPref = false){
   double res = 0;
   if(enable){
     arma::vec Samp_count = as<arma::vec>(SampleInit[0]);
     arma::ivec grid_idx = as<arma::ivec>(SampleInit[1]);
-    arma::mat Prev_Traj = SIR_Traj(Traj, grid_idx);
-    res = pref_core(Prev_Traj, Samp_count, Pref_par, Pois);
+    if(!incidPref){
+      arma::mat Prev_Traj = SIR_Traj(Traj, grid_idx);
+      res = pref_core(Prev_Traj, Samp_count, Pref_par, Pois);
+    }else{
+      arma::mat Incid_Traj = SIR_incidence_Traj(Traj, grid_idx);
+      res = pref_core(Incid_Traj, Samp_count, Pref_par, Pois);
+    }
   }
   return res;
 }
@@ -2893,7 +2899,8 @@ List ESlice_general_NC_joint(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma:
 List Update_Param_Pref(arma::vec param, arma::vec initial, arma::vec pref_par, arma::vec t, arma::mat OriginTraj,
                        arma::vec x_r, arma::ivec x_i, List init, List SampleInit, int gridsize,
                        double coal_log=0, double pref_log = 0, double prior_proposal_offset = 0, double t_correct = 0, std::string transP = "changepoint",
-                       std::string model = "SIR", std::string transX = "standard", bool volz = true, bool addCoal = true, bool addPref = true){
+                       std::string model = "SIR", std::string transX = "standard", bool volz = true, bool addCoal = true,
+                       bool addPref = true, bool incidPref = false ){
 
   arma::mat OdeTraj_thin = ODE_rk45(initial,t, param,
                                     x_r, x_i, transP, model, transX);
@@ -2908,7 +2915,7 @@ List Update_Param_Pref(arma::vec param, arma::vec initial, arma::vec pref_par, a
 
   double coal_log_new = volz_loglik_nh_adj(init, NewTraj,betaNs, t_correct, x_i.subvec(2,3) ,addCoal);
 
-  double pref_log_new = log_prev(NewTraj, SampleInit, pref_par, true, addPref);
+  double pref_log_new = log_prev(NewTraj, SampleInit, pref_par, true, addPref, incidPref);
 
   double a = coal_log_new - coal_log + pref_log_new - pref_log + prior_proposal_offset;
 
@@ -2934,7 +2941,8 @@ List Update_Param_Pref(arma::vec param, arma::vec initial, arma::vec pref_par, a
 List ESlice_par_General_pref(arma::vec par_old, arma::vec pref_par, arma::vec t, arma::mat OriginTraj,List priorList,
                              arma::vec x_r, arma::ivec x_i, List init, List SampleInit,int gridsize, arma::ivec ESS_vec,
                              double coal_log = 0, double pref_log = 0, double t_correct = 0, std::string transP = "changepoint",
-                             std::string model = "SIR", std::string transX = "standard", bool volz = true,bool addCoal = true, bool addPref = true){
+                             std::string model = "SIR", std::string transX = "standard", bool volz = true,bool addCoal = true,
+                             bool addPref = true, bool incidPref = false){
 
   /*
   *
@@ -3021,7 +3029,7 @@ List ESlice_par_General_pref(arma::vec par_old, arma::vec pref_par, arma::vec t,
       OriginTraj_new = OriginTraj;
       NewTraj = TransformTraj(OdeTraj_new, OriginTraj_new, FT_new);
       coal_log_new = volz_loglik_nh_adj(init, NewTraj,betaN,t_correct,Index ,addCoal);
-      pref_log_new = log_prev(NewTraj, SampleInit, pref_par,true,addPref);
+      pref_log_new = log_prev(NewTraj, SampleInit, pref_par,true,addPref, incidPref);
       //Rcout << "coal diff = " <<coal_log_new - coal_log << "Pref diff = " << pref_log_new - pref_log << endl;
       break;
     }
@@ -3070,7 +3078,7 @@ List ESlice_par_General_pref(arma::vec par_old, arma::vec pref_par, arma::vec t,
     NewTraj = TransformTraj(OdeTraj_new, OriginTraj_new, FT_new);
 
     coal_log_new = volz_loglik_nh_adj(init, NewTraj, betaN, t_correct, Index ,addCoal);
-    pref_log_new = log_prev(NewTraj, SampleInit, pref_par,true,addPref);
+    pref_log_new = log_prev(NewTraj, SampleInit, pref_par,true,addPref, incidPref);
   }
   while(coal_log_new + pref_log_new <= logy);
 
@@ -3098,7 +3106,8 @@ List ESlice_par_General_pref(arma::vec par_old, arma::vec pref_par, arma::vec t,
 List ESlice_general_NC_pref(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::vec state, arma::vec pref_par,
                             List init, List SampleInit, arma::vec betaN, double t_correct, double lambda=10,
                             double coal_log = -99999999, double PrefLog = -9999999, int gridsize = 100, bool volz = false, std::string model = "SIR",
-                            std::string transX = "standard",bool addCoal = true, bool addPref = true){
+                            std::string transX = "standard",bool addCoal = true, bool addPref = true,
+                            bool incidPref = false){
 
   // OdeTraj is the one with low resolution
 
@@ -3141,7 +3150,7 @@ List ESlice_general_NC_pref(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::
   }else{
     loglike = coal_loglik3(init,LogTraj(newTraj),t_correct,lambda,Index(1), transX);
   }
-  PrefLog_new = log_prev(newTraj, SampleInit, pref_par, true,addPref);
+  PrefLog_new = log_prev(newTraj, SampleInit, pref_par, true,addPref,incidPref);
 
   while(newTraj.submat(0, 1, idx_bound, p).min() <0 || (loglike + PrefLog_new) <= logy){
     // shrink the bracket
@@ -3149,7 +3158,7 @@ List ESlice_general_NC_pref(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::
     if(i>20){
       newTraj = TransformTraj(OdeTraj,f_cur, FTs);
       loglike = volz_loglik_nh_adj(init, newTraj,betaN,t_correct,Index , addCoal);
-      PrefLog_new = log_prev(newTraj, SampleInit, pref_par,true,addPref);
+      PrefLog_new = log_prev(newTraj, SampleInit, pref_par,true,addPref, incidPref);
       f_prime = f_cur;
       //Rcout << "theta = "<< theta << endl;
       //Rcout << "coal diff0" <<loglike - coal_log << "Pref diff0" << PrefLog_new - PrefLog << endl;
@@ -3169,7 +3178,7 @@ List ESlice_general_NC_pref(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::
     }else{
       loglike = coal_loglik3(init,LogTraj(newTraj),t_correct,lambda,Index(1), transX);
     }
-    PrefLog_new = log_prev(newTraj, SampleInit, pref_par, true,addPref);
+    PrefLog_new = log_prev(newTraj, SampleInit, pref_par, true,addPref, incidPref);
     if(isnan(loglike)){
       Rcout << "NaN in Slice Sampler " << endl;
     }

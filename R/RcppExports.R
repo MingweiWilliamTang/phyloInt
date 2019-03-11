@@ -145,8 +145,8 @@ SIR_Traj <- function(Traj, gridrep) {
     .Call('_phyloInt_SIR_Traj', PACKAGE = 'phyloInt', Traj, gridrep)
 }
 
-log_prev <- function(Traj, SampleInit, Pref_par, Pois = FALSE, enable = TRUE) {
-    .Call('_phyloInt_log_prev', PACKAGE = 'phyloInt', Traj, SampleInit, Pref_par, Pois, enable)
+log_prev <- function(Traj, SampleInit, Pref_par, Pois = FALSE, enable = TRUE, incidPref = FALSE) {
+    .Call('_phyloInt_log_prev', PACKAGE = 'phyloInt', Traj, SampleInit, Pref_par, Pois, enable, incidPref)
 }
 
 log_incidence_approx <- function(betat, Traj, Incidence_obs, incid_par, dts, Pois = FALSE) {
@@ -209,15 +209,15 @@ ESlice_general_NC_joint <- function(f_cur, OdeTraj, FTs, state, incid_par, init,
     .Call('_phyloInt_ESlice_general_NC_joint', PACKAGE = 'phyloInt', f_cur, OdeTraj, FTs, state, incid_par, init, Incidence, betaN, t_correct, lambda, coal_log, IncidLog, gridsize, volz, model, transX, addCoal, addIncid)
 }
 
-Update_Param_Pref <- function(param, initial, pref_par, t, OriginTraj, x_r, x_i, init, SampleInit, gridsize, coal_log = 0, pref_log = 0, prior_proposal_offset = 0, t_correct = 0, transP = "changepoint", model = "SIR", transX = "standard", volz = TRUE, addCoal = TRUE, addPref = TRUE) {
-    .Call('_phyloInt_Update_Param_Pref', PACKAGE = 'phyloInt', param, initial, pref_par, t, OriginTraj, x_r, x_i, init, SampleInit, gridsize, coal_log, pref_log, prior_proposal_offset, t_correct, transP, model, transX, volz, addCoal, addPref)
+Update_Param_Pref <- function(param, initial, pref_par, t, OriginTraj, x_r, x_i, init, SampleInit, gridsize, coal_log = 0, pref_log = 0, prior_proposal_offset = 0, t_correct = 0, transP = "changepoint", model = "SIR", transX = "standard", volz = TRUE, addCoal = TRUE, addPref = TRUE, incidPref = FALSE) {
+    .Call('_phyloInt_Update_Param_Pref', PACKAGE = 'phyloInt', param, initial, pref_par, t, OriginTraj, x_r, x_i, init, SampleInit, gridsize, coal_log, pref_log, prior_proposal_offset, t_correct, transP, model, transX, volz, addCoal, addPref, incidPref)
 }
 
-ESlice_par_General_pref <- function(par_old, pref_par, t, OriginTraj, priorList, x_r, x_i, init, SampleInit, gridsize, ESS_vec, coal_log = 0, pref_log = 0, t_correct = 0, transP = "changepoint", model = "SIR", transX = "standard", volz = TRUE, addCoal = TRUE, addPref = TRUE) {
-    .Call('_phyloInt_ESlice_par_General_pref', PACKAGE = 'phyloInt', par_old, pref_par, t, OriginTraj, priorList, x_r, x_i, init, SampleInit, gridsize, ESS_vec, coal_log, pref_log, t_correct, transP, model, transX, volz, addCoal, addPref)
+ESlice_par_General_pref <- function(par_old, pref_par, t, OriginTraj, priorList, x_r, x_i, init, SampleInit, gridsize, ESS_vec, coal_log = 0, pref_log = 0, t_correct = 0, transP = "changepoint", model = "SIR", transX = "standard", volz = TRUE, addCoal = TRUE, addPref = TRUE, incidPref = FALSE) {
+    .Call('_phyloInt_ESlice_par_General_pref', PACKAGE = 'phyloInt', par_old, pref_par, t, OriginTraj, priorList, x_r, x_i, init, SampleInit, gridsize, ESS_vec, coal_log, pref_log, t_correct, transP, model, transX, volz, addCoal, addPref, incidPref)
 }
 
-ESlice_general_NC_pref <- function(f_cur, OdeTraj, FTs, state, pref_par, init, SampleInit, betaN, t_correct, lambda = 10, coal_log = -99999999, PrefLog = -9999999, gridsize = 100L, volz = FALSE, model = "SIR", transX = "standard", addCoal = TRUE, addPref = TRUE) {
-    .Call('_phyloInt_ESlice_general_NC_pref', PACKAGE = 'phyloInt', f_cur, OdeTraj, FTs, state, pref_par, init, SampleInit, betaN, t_correct, lambda, coal_log, PrefLog, gridsize, volz, model, transX, addCoal, addPref)
+ESlice_general_NC_pref <- function(f_cur, OdeTraj, FTs, state, pref_par, init, SampleInit, betaN, t_correct, lambda = 10, coal_log = -99999999, PrefLog = -9999999, gridsize = 100L, volz = FALSE, model = "SIR", transX = "standard", addCoal = TRUE, addPref = TRUE, incidPref = FALSE) {
+    .Call('_phyloInt_ESlice_general_NC_pref', PACKAGE = 'phyloInt', f_cur, OdeTraj, FTs, state, pref_par, init, SampleInit, betaN, t_correct, lambda, coal_log, PrefLog, gridsize, volz, model, transX, addCoal, addPref, incidPref)
 }
 
