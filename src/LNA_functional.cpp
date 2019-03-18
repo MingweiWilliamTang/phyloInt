@@ -2592,9 +2592,9 @@ arma::vec LNA_integrate_pred(arma::mat LNA_traj, arma::vec incid_par,int cutID){
   arma::vec pred(l);
   arma::mat LNA_incid = SIR_incidence_Traj(LNA_traj);
   for(int i = 0; i < l; i ++){
-      pred(i) = LNA_incid(cutID + i - 1,1) > 0 ? LNA_incid(cutID + i - 1,1) : 0;
-      //double mu = LNA_incid(cutID + i,1) > 0 ? LNA_incid(cutID + i,1) * incid_par(0) : 0;
-      //pred(i) = R::rnbinom(incid_par(1), incid_par(1) / (incid_par(1) + mu));
+      //pred(i) = LNA_incid(cutID + i - 1,1) > 0 ? LNA_incid(cutID + i - 1,1) : 0;
+      double mu = LNA_incid(cutID + i - 1,1) > 0 ? LNA_incid(cutID + i - 1,1) * incid_par(0) : 0;
+      pred(i) = R::rnbinom(incid_par(1), incid_par(1) / (incid_par(1) + mu));
   }
   return pred;
 }
