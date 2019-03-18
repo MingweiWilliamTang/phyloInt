@@ -38,9 +38,20 @@ MCMC_setup_Joint_Inference = function(tree,raw_incidence_obs, times,t_correct,N,
     tree = newtree[[1]]
     t_correct = newtree[[2]]
     coal_obs = summarize_phylo(tree)
+  }else{
+    cut_times = max(grid) - t_correct
+  }
+  c = 0
+  for(i in 1:length(changetime)){
+    if(changetime[i] <= cut_times){
+        c = c + 1
+    }else{
+      break;
+    }
   }
   Init = coal_lik_init(coal_obs$samp_times, coal_obs$n_sampled, coal_obs$coal_times, grid,t_correct)
   grid = grid[1:(sum(grid < cut_times) + 1)]
+  mgrid = length(grid)
   n = dim(raw_incidence_obs)[1]
   i = 1
   k = 2
@@ -90,7 +101,7 @@ MCMC_setup_Joint_Inference = function(tree,raw_incidence_obs, times,t_correct,N,
   if(is.null(t_correct)){
     t_correct = max(coal_obs$coal)
   }
-  x_i = c(length(changetime),nparam,Index[1],Index[2])
+  x_i = c(length(changetime),nparam,Index[1],Index[2], c,mgrid)
   print("time grids")
   print(times[1:max(time_inc_end, Init$ng + 1)])
   print("_________________")
@@ -171,6 +182,11 @@ MCMC_initialize_Integrate = function(MCMC_setting, enable = c(T,T)){
         ch = MCMC_setting$control$ch
       }
     }
+    ##########
+    if(MCMC_setting$x_i[5] < MCMC_setting$x_i[1]){
+      ch[(MCMC_setting$x_i[5] + 1):MCMC_setting$x_i[1]] = 1
+    }
+    ########
     if(MCMC_setting$model == "SEIR" || MCMC_setting$model == "SEIR2"){
       param = c(R0,mu,gamma,ch,hyper)
     }else if(MCMC_setting$model == "SIR"){
@@ -240,6 +256,7 @@ MCMC_initialize_Integrate = function(MCMC_setting, enable = c(T,T)){
   print(paste(paras))
   return(MCMC_obj)
 }
+
 
 
 sigmoid = function(x){
@@ -377,8 +394,11 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
   l3 = l
   #l2 = matrix(ncol = 5, nrow = niter)
   tjs = array(dim = c(dim(MCMC_obj$LatentTraj),niter/thin))
-
-
+  if(length(times) > MCMC_setting$x_i[6]){
+    PredMX = matrix(nrow = niter, ncol = length(times) - MCMC_setting$x_i[6])
+  }else{
+    PredMX = NULL
+  }
 
   #' updateVec
   #' 1 parameter for intial state
@@ -459,13 +479,16 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
     if(i %% thin == 0){
       tjs[,,as.integer(i/thin)] = MCMC_obj$LatentTraj
     }
+    if(length(times) > MCMC_setting$x_i[6]){
+      PredMX[i,] = LNA_integrate_pred(LNA_traj = MCMC_obj$LatentTraj, incid_par = MCMC_obj$incid_par, MCMC_setting$x_i[6])
+  }
     params[i,] = MCMC_obj$par
     params_incid[i,] = MCMC_obj$incid_par
     l[i] = MCMC_obj$logOrigin
     l1[i] = MCMC_obj$coalLog
     l3[i] = MCMC_obj$IncidLog
   }
-  return(list(par = params, incid_par = params_incid, Trajectory = tjs,l=l,l1=l1,l3 = l3, MX = MCMC_setting$PCOV, MCMC_setting = MCMC_setting, MCMC_obj = MCMC_obj))
+  return(list(par = params, incid_par = params_incid, Trajectory = tjs,l=l,l1=l1,l3 = l3, MX = MCMC_setting$PCOV, MCMC_setting = MCMC_setting, MCMC_obj = MCMC_obj, PredMX = PredMX))
 }
 
 log_post = function(MCMC_res, pref = F, incid = F){

@@ -197,6 +197,14 @@ log_incidence <- function(Traj, IncidenceList, Incid_Par, Pois, enable) {
     .Call('_phyloInt_log_incidence', PACKAGE = 'phyloInt', Traj, IncidenceList, Incid_Par, Pois, enable)
 }
 
+LNA_integrate_pred <- function(LNA_traj, incid_par, cutID) {
+    .Call('_phyloInt_LNA_integrate_pred', PACKAGE = 'phyloInt', LNA_traj, incid_par, cutID)
+}
+
+LNA_integrate_predict_cont <- function(param, initial, incid_par, t, OriginTraj, x_r, x_i, gridsize, cuttime) {
+    .Call('_phyloInt_LNA_integrate_predict_cont', PACKAGE = 'phyloInt', param, initial, incid_par, t, OriginTraj, x_r, x_i, gridsize, cuttime)
+}
+
 Update_Param_JointData <- function(param, initial, incid_par, t, OriginTraj, x_r, x_i, init, Incidence_data, gridsize, coal_log = 0, incid_log = 0, prior_proposal_offset = 0, t_correct = 0, transP = "changepoint", model = "SIR", transX = "standard", volz = TRUE, addCoal = TRUE, addIncid = TRUE) {
     .Call('_phyloInt_Update_Param_JointData', PACKAGE = 'phyloInt', param, initial, incid_par, t, OriginTraj, x_r, x_i, init, Incidence_data, gridsize, coal_log, incid_log, prior_proposal_offset, t_correct, transP, model, transX, volz, addCoal, addIncid)
 }

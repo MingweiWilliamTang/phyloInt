@@ -807,6 +807,38 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// LNA_integrate_pred
+arma::vec LNA_integrate_pred(arma::mat LNA_traj, arma::vec incid_par, int cutID);
+RcppExport SEXP _phyloInt_LNA_integrate_pred(SEXP LNA_trajSEXP, SEXP incid_parSEXP, SEXP cutIDSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type LNA_traj(LNA_trajSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type incid_par(incid_parSEXP);
+    Rcpp::traits::input_parameter< int >::type cutID(cutIDSEXP);
+    rcpp_result_gen = Rcpp::wrap(LNA_integrate_pred(LNA_traj, incid_par, cutID));
+    return rcpp_result_gen;
+END_RCPP
+}
+// LNA_integrate_predict_cont
+List LNA_integrate_predict_cont(arma::vec param, arma::vec initial, arma::vec incid_par, arma::vec t, arma::mat OriginTraj, arma::vec x_r, arma::ivec x_i, int gridsize, double cuttime);
+RcppExport SEXP _phyloInt_LNA_integrate_predict_cont(SEXP paramSEXP, SEXP initialSEXP, SEXP incid_parSEXP, SEXP tSEXP, SEXP OriginTrajSEXP, SEXP x_rSEXP, SEXP x_iSEXP, SEXP gridsizeSEXP, SEXP cuttimeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type param(paramSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type initial(initialSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type incid_par(incid_parSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type t(tSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type OriginTraj(OriginTrajSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x_r(x_rSEXP);
+    Rcpp::traits::input_parameter< arma::ivec >::type x_i(x_iSEXP);
+    Rcpp::traits::input_parameter< int >::type gridsize(gridsizeSEXP);
+    Rcpp::traits::input_parameter< double >::type cuttime(cuttimeSEXP);
+    rcpp_result_gen = Rcpp::wrap(LNA_integrate_predict_cont(param, initial, incid_par, t, OriginTraj, x_r, x_i, gridsize, cuttime));
+    return rcpp_result_gen;
+END_RCPP
+}
 // Update_Param_JointData
 List Update_Param_JointData(arma::vec param, arma::vec initial, arma::vec incid_par, arma::vec t, arma::mat OriginTraj, arma::vec x_r, arma::ivec x_i, List init, List Incidence_data, int gridsize, double coal_log, double incid_log, double prior_proposal_offset, double t_correct, std::string transP, std::string model, std::string transX, bool volz, bool addCoal, bool addIncid);
 RcppExport SEXP _phyloInt_Update_Param_JointData(SEXP paramSEXP, SEXP initialSEXP, SEXP incid_parSEXP, SEXP tSEXP, SEXP OriginTrajSEXP, SEXP x_rSEXP, SEXP x_iSEXP, SEXP initSEXP, SEXP Incidence_dataSEXP, SEXP gridsizeSEXP, SEXP coal_logSEXP, SEXP incid_logSEXP, SEXP prior_proposal_offsetSEXP, SEXP t_correctSEXP, SEXP transPSEXP, SEXP modelSEXP, SEXP transXSEXP, SEXP volzSEXP, SEXP addCoalSEXP, SEXP addIncidSEXP) {
@@ -1037,6 +1069,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_phyloInt_ESlice_general_NC", (DL_FUNC) &_phyloInt_ESlice_general_NC, 13},
     {"_phyloInt_ESlice_general2", (DL_FUNC) &_phyloInt_ESlice_general2, 13},
     {"_phyloInt_log_incidence", (DL_FUNC) &_phyloInt_log_incidence, 5},
+    {"_phyloInt_LNA_integrate_pred", (DL_FUNC) &_phyloInt_LNA_integrate_pred, 3},
+    {"_phyloInt_LNA_integrate_predict_cont", (DL_FUNC) &_phyloInt_LNA_integrate_predict_cont, 9},
     {"_phyloInt_Update_Param_JointData", (DL_FUNC) &_phyloInt_Update_Param_JointData, 20},
     {"_phyloInt_ESlice_par_General_JointData", (DL_FUNC) &_phyloInt_ESlice_par_General_JointData, 20},
     {"_phyloInt_ESlice_general_NC_joint", (DL_FUNC) &_phyloInt_ESlice_general_NC_joint, 18},

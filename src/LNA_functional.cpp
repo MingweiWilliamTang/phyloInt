@@ -1746,7 +1746,11 @@ arma::vec Param_Slice_update_all2(arma::vec par_old, arma::vec x_r, arma::ivec x
     par_new(x_i(0) + x_i(1) + 2) = exp(Chs_prime(x_i(0) + x_i(1) + 1) * pr(7) + pr(6));
   }
   if(ESS_vec(5) != 0){
-    par_new.subvec(4, x_i(0) + x_i(1) + 1) = arma::exp(Chs_prime.subvec(3,x_i(0) + x_i(1)) / par_new(x_i(0) + x_i(1) + 2));
+    //par_new.subvec(4, x_i(0) + x_i(1) + 1) = arma::exp(Chs_prime.subvec(3,x_i(0) + x_i(1)) / par_new(x_i(0) + x_i(1) + 2));
+    par_new.subvec(4, x_i(4) + x_i(1) + 1) = arma::exp(Chs_prime.subvec(3,x_i(4) + x_i(1)) / par_new(x_i(0) + x_i(1) + 2));
+    if(x_i(4) < x_i(0)){
+      par_new.subvec(x_i(4) + x_i(1) + 2, x_i(0) + x_i(1) + 1) = arma::ones(x_i(0) - x_i(4));
+    }
   }
 
   return par_new;
@@ -2580,6 +2584,60 @@ double log_incidence(arma::mat Traj, List IncidenceList, arma::vec Incid_Par, bo
 }
 
 
+
+//[[Rcpp::export()]]
+arma::vec LNA_integrate_pred(arma::mat LNA_traj, arma::vec incid_par,int cutID){
+  int n = LNA_traj.n_rows - 1;
+  int l = n + 1 - cutID;
+  arma::vec pred(l);
+  arma::mat LNA_incid = SIR_incidence_Traj(LNA_traj);
+  for(int i = 0; i < l; i ++){
+      pred(i) = LNA_incid(cutID + i - 1,1) > 0 ? LNA_incid(cutID + i - 1,1) : 0;
+      //double mu = LNA_incid(cutID + i,1) > 0 ? LNA_incid(cutID + i,1) * incid_par(0) : 0;
+      //pred(i) = R::rnbinom(incid_par(1), incid_par(1) / (incid_par(1) + mu));
+  }
+  return pred;
+}
+
+//[[Rcpp::export()]]
+List LNA_integrate_predict_cont(arma::vec param, arma::vec initial, arma::vec incid_par, arma::vec t, arma::mat OriginTraj,
+                      arma::vec x_r, arma::ivec x_i, int gridsize, double cuttime){
+  int l = param.n_elem - 5;
+  for(int i = 0; i < l; i ++){
+    if(x_r[1 + i] > cuttime){
+      param[4 + i] = 1;
+    }
+  }
+  int n = OriginTraj.n_rows + 1;
+  arma::mat OdeTraj_thin = ODE_rk45(initial,t, param,
+                                    x_r, x_i, "changepoint", "SIR", "standard");
+
+  List FT = KF_param_chol(OdeTraj_thin, param, gridsize, x_r, x_i, "changepoint", "SIR", "standard");
+
+  arma::mat Ode_Coarse = Ode_Coarse_Slicer(OdeTraj_thin, gridsize);
+
+  arma::vec betaNs = betaTs(param,Ode_Coarse.col(0),x_r, x_i);
+
+  arma::mat NewTraj = TransformTraj(Ode_Coarse, OriginTraj, FT);
+  int c = 0;
+  for(int i = 0; i < n; i ++){
+    if(NewTraj(1 + i,0) <= cuttime){
+      c ++;
+    }else{
+      break;
+    }
+  }
+  arma::vec Pred(n - c,2);
+  for(int i = n-c; i < n; i ++){
+    double mu = NewTraj(i,2) > 0 ? incid_par[0] * NewTraj(i,2) : 0;
+      Pred(i - (n-c)) = R::rnbinom(incid_par[1], incid_par[1] / (mu + incid_par[1]));
+  }
+  List result;
+  result["Traj"] = NewTraj;
+  result["Incid"] = Pred;
+  return result;
+}
+
 //[[Rcpp::export()]]
 List Update_Param_JointData(arma::vec param, arma::vec initial, arma::vec incid_par, arma::vec t, arma::mat OriginTraj,
                             arma::vec x_r, arma::ivec x_i, List init, List Incidence_data, int gridsize,
@@ -2787,6 +2845,7 @@ List ESlice_par_General_JointData(arma::vec par_old, arma::vec incid_par, arma::
   result["logOrigin"] = logOrigin;
   return result;
 }
+
 
 //[[Rcpp::export()]]
 List ESlice_general_NC_joint(arma::mat f_cur, arma::mat OdeTraj, List FTs, arma::vec state, arma::vec incid_par,
