@@ -441,14 +441,14 @@ random_Incidence_predictive = function(MCMC_obj,idx,thin, col = "black", fill_co
   incid_MX = apply(MCMC_obj$Trajectory[,,idx/thin], 3, function(x){
     return(SIR_incidence_Traj(x,1:dim(x)[1]-1)[,2])
   })
-  rhosMX = MCMC_obj$incid_par[idx,1]
+  rhosMX = matrix(rep(MCMC_obj$incid_par[idx,1], each = length(t)), ncol = length(idx))
   phiMX = MCMC_obj$incid_par[idx,2]
 
   incid_MX = incid_MX * rhosMX
   sample_MX = matrix(ncol = length(idx), nrow = length(t))
-  for(i in 1:length(rhosMX)){
+  for(i in 1:length(idx)){
       sample_MX[,i] = sapply(incid_MX[,i], function(x){
-      return(rnbinom(1,size = phiMX[i],mu = rhosMX[i] * x))
+      return(rnbinom(1,size = phiMX[i],mu = max(x,0)))
     })
   }
 
@@ -469,6 +469,7 @@ random_Incidence_predictive = function(MCMC_obj,idx,thin, col = "black", fill_co
   }
   polygon(c(t,rev(t)),
           c(upper,rev(lower)),border = NA, col = fill_col)
+  return(list(up = upper, mid = mid, low = lower))
 }
 
 
@@ -572,7 +573,7 @@ random_Incidence_pred_stat = function(MCMC_obj, idx, thin, incid = T){
     return(SIR_incidence_Traj(x,1:dim(x)[1]-1)[,2])
   })
   if(incid == T){
-    rhosMX = MCMC_obj$incid_par[idx,1]
+    rhosMX = matrix(rep(MCMC_obj$incid_par[idx,1], each = length(t)), ncol = length(idx))
     phiMX = MCMC_obj$incid_par[idx,2]
   }else{
     rho_pr = MCMC_obj$MCMC_setting$prior$rho_pr
@@ -581,11 +582,11 @@ random_Incidence_pred_stat = function(MCMC_obj, idx, thin, incid = T){
     phiMX =  rlnorm(length(idx),phi_pr[1], phi_pr[2])
   }
   incid_MX = incid_MX * rhosMX
-  incid_MX = pmax(incid_MX, 0)
+  #incid_MX = pmax(incid_MX, 0)
   sample_MX = matrix(ncol = length(idx), nrow = length(t))
-  for(i in 1:length(rhosMX)){
+  for(i in 1:length(idx)){
     sample_MX[,i] = sapply(incid_MX[,i], function(x){
-      return(rnbinom(1,size = phiMX[i],mu = rhosMX[i] * x))
+      return(rnbinom(1,size = phiMX[i],mu = max(x,0)))
     })
   }
 
@@ -599,7 +600,7 @@ random_Incidence_pred_stat = function(MCMC_obj, idx, thin, incid = T){
     return(quantile(x,0.025,na.rm = T))
   })
 
-  return(list(times = t, up = upper, low = lower, mid = mid))
+  return(list(times = t, up = upper, low = lower, mid = mid,sample_MX = sample_MX))
 }
 
 MCMC_summarize = function(times, MCMC_obj, idx, thin, alpha = 0.05){
@@ -655,5 +656,41 @@ MCMC_summarize_pref = function(times, MCMC_obj, idx, thin, alpha, pref = T){
   return(list(parDensity = parDensity, R0_traj = R0_traj, I_traj = I_traj, S_traj = S_traj,Pref_par = Pref_par))
 }
 
+pref_sample_intense = function(MCMC_obj, idx, thin){
+  traj = log(MCMC_obj$Trajectory[,3,idx / thin] + 1)
+  dt =  log(MCMC_obj$Trajectory[2,1,1] - MCMC_obj$Trajectory[1,1,1])
+  k1 = MCMC_obj$pref_par[idx,1]
+  k1 = matrix(rep(k1,dim(traj)[1]),byrow = T, ncol = length(idx))
+  k2 = MCMC_obj$pref_par[idx,2]
+  k2 = matrix(rep(k2,dim(traj)[1]),byrow = T, ncol = length(idx))
+  sample_MX = traj * k1 + k2 - dt
 
+  mid = apply(sample_MX,1,function(x){
+    return(quantile(x,0.5,na.rm = T))
+  })
+  upper = apply(sample_MX,1,function(x){
+    return(quantile(x,0.975,na.rm = T))
+  })
+  lower = apply(sample_MX,1,function(x){
+    return(quantile(x,0.025,na.rm = T))
+  })
+  return(list(mid = mid, upper = upper, lower = lower))
+}
+
+add_interval = function(up, mid,down, time, col1 = rgb(0,0,1,0.23),col2 = "red", lwd = 2, lty = 2){
+  polygon(c(time, rev(time)),c(up, rev(down)), col = col1, border = NA)
+  lines(time, mid, col = col2, lwd = 2, lty = lty)
+}
+
+log_predictive = function(truth, ids, sampleMX, rule){
+  res = sapply(ids, function(x){
+    r = rule(truth[x])
+    return(log(mean(r$up > sampleMX[x,] & r$down < sampleMX[x,])))
+  })
+  return(res)
+}
+
+rules = function(x){
+  return(list(up = x + 15,down = max(x - 15,0)))
+}
 

@@ -394,11 +394,11 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
   l3 = l
   #l2 = matrix(ncol = 5, nrow = niter)
   tjs = array(dim = c(dim(MCMC_obj$LatentTraj),niter/thin))
-  if(length(times) > MCMC_setting$x_i[6]){
-    PredMX = matrix(nrow = niter, ncol = length(times) - MCMC_setting$x_i[6])
-  }else{
-    PredMX = NULL
-  }
+  #if(length(times) > MCMC_setting$x_i[6]){
+    #PredMX = matrix(nrow = niter, ncol = length(times) - MCMC_setting$x_i[6])
+ # }else{
+  #  PredMX = NULL
+ # }
 
   #' updateVec
   #' 1 parameter for intial state
@@ -479,16 +479,16 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
     if(i %% thin == 0){
       tjs[,,as.integer(i/thin)] = MCMC_obj$LatentTraj
     }
-    if(length(times) > MCMC_setting$x_i[6]){
-      PredMX[i,] = LNA_integrate_pred(LNA_traj = MCMC_obj$LatentTraj, incid_par = MCMC_obj$incid_par, MCMC_setting$x_i[6])
-  }
+  #  if(length(times) > MCMC_setting$x_i[6]){
+  #    PredMX[i,] = LNA_integrate_pred(LNA_traj = MCMC_obj$LatentTraj, incid_par = MCMC_obj$incid_par, MCMC_setting$x_i[6])
+#  }
     params[i,] = MCMC_obj$par
     params_incid[i,] = MCMC_obj$incid_par
     l[i] = MCMC_obj$logOrigin
     l1[i] = MCMC_obj$coalLog
     l3[i] = MCMC_obj$IncidLog
   }
-  return(list(par = params, incid_par = params_incid, Trajectory = tjs,l=l,l1=l1,l3 = l3, MX = MCMC_setting$PCOV, MCMC_setting = MCMC_setting, MCMC_obj = MCMC_obj, PredMX = PredMX))
+  return(list(par = params, incid_par = params_incid, Trajectory = tjs,l=l,l1=l1,l3 = l3, MX = MCMC_setting$PCOV, MCMC_setting = MCMC_setting, MCMC_obj = MCMC_obj))
 }
 
 log_post = function(MCMC_res, pref = F, incid = F){

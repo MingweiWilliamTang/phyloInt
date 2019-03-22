@@ -237,12 +237,23 @@ MCMC_setup_Pref_Inference = function(tree,times,t_correct,N,gridsize=50,niter = 
     tree = newtree[[1]]
     t_correct = newtree[[2]]
     coal_obs = summarize_phylo(tree)
+  }else{
+    cut_times = max(grid) - t_correct
   }
+  c = 0
+  for(i in 1:length(changetime)){
+    if(changetime[i] <= cut_times){
+      c = c + 1
+    }else{
+      break;
+    }
+  }
+  mgrid = length(grid)
 
   Init = coal_lik_init(coal_obs$samp_times, coal_obs$n_sampled, coal_obs$coal_times, grid,t_correct)
   SampleInit = preferential_lik_init(grid, coal_obs$samp_times, coal_obs$n_sampled, t_correct,gdiff = 1, g_start = cut$start, g_end = cut$end, incidPref)
 
-  x_i = c(length(changetime),nparam,Index[1],Index[2])
+  x_i = c(length(changetime),nparam,Index[1],Index[2],c,mgrid)
   print("time grids")
   print("_________________")
   MCMC_setting = list(Init = Init, SampleInit = SampleInit, times = Times,t_correct = t_correct,x_r = c(N,changetime),
