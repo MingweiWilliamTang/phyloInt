@@ -376,8 +376,10 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
   MCMC_obj = MCMC_initialize_Integrate(MCMC_setting)
 
   prlist = list(a = prior[[1]][1:2], b = prior[[2]][1:2],c = prior[[3]][1:2],d = prior[[5]][1:2])
-  params_incid = matrix(nrow = niter, ncol = 2)
-
+  params_incid = NULL
+  if(enable[2]){
+    params_incid = matrix(nrow = niter, ncol = 2)
+  }
   if (MCMC_setting$likelihood == "volz") { # volz likelihood model
 
     params = matrix(nrow = niter, ncol = nparam + MCMC_obj$p)
@@ -483,7 +485,9 @@ General_MCMC_Integrate_ESlice = function(coal_obs,incidence_obs,times,t_correct,
   #    PredMX[i,] = LNA_integrate_pred(LNA_traj = MCMC_obj$LatentTraj, incid_par = MCMC_obj$incid_par, MCMC_setting$x_i[6])
 #  }
     params[i,] = MCMC_obj$par
-    params_incid[i,] = MCMC_obj$incid_par
+    if(enable[2]){
+      params_incid[i,] = MCMC_obj$incid_par
+    }
     l[i] = MCMC_obj$logOrigin
     l1[i] = MCMC_obj$coalLog
     l3[i] = MCMC_obj$IncidLog

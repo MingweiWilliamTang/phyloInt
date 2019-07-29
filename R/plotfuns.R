@@ -64,6 +64,20 @@ medianCur = function(MCMC_obj,ids,scale=1,col="black",row=3,med = T,volz = F,lwd
   }
 }
 
+medianCur_end = function(MCMC_obj,ids,scale=1,col="black",row=3,med = T,endTime = NULL, lwd = 2,lty = 2){
+  if(is.null(endTime)){
+    endTime = max(MCMC_obj$Trajectory[,1,1])
+  }
+  time_id = (MCMC_obj$Trajectory[,1,1] <= endTime)
+  if(med){
+    lines(MCMC_obj$Trajectory[time_id ,1,1],apply(MCMC_obj$Trajectory[time_id ,row,ids]/scale,1,median),
+          col=col,lwd=lwd,lty=lty)
+  }else{
+    lines(MCMC_obj$Trajectory[time_id ,1,1],apply(MCMC_obj$Trajectory[time_id ,row,ids]/scale,1,mean),
+          col=col,lwd=lwd,lty = lty)
+  }
+}
+
 
 effpopfun = function(Traj,beta=0,lambda=1, volz = FALSE){
   if(volz){
@@ -72,6 +86,49 @@ effpopfun = function(Traj,beta=0,lambda=1, volz = FALSE){
     return(Traj[,3] / lambda)
   }
 }
+
+
+CI_Curve_end = function(MCMC_obj,ids,endTime = NULL,scale = 1,col = "black", fill_col = "grey", row = 3,method = "qtile",alpha=0.05,fill = T){
+  if(is.null(endTime)){
+    endTime = max(MCMC_obj$Trajectory[,1,1])
+  }
+  time_id = (MCMC_obj$Trajectory[,1,1] <= endTime)
+  if(method == "NormApp"){
+    midcur = apply(MCMC_obj$Trajectory[time_id ,row,ids]/scale,1,mean)
+    midSd = apply(MCMC_obj$Trajectory[time_id ,row,ids]/scale,1,sd)
+    qt = qnorm(1-alpha/2)
+    upper = midcur + qt * midSd
+    lower = midcur - qt * midSd
+    #lines(MCMC_obj$Trajectory[,1,1],upper,lty=2,
+    #      col=col,lwd=2)
+
+    #lines(MCMC_obj$Trajectory[,1,1],lower,lty=2,
+    #      col=col,lwd=2)
+  }else if(method == "qtile"){
+    qt1 = 1 - alpha/2
+    qt2 = alpha/2
+    upper = apply(MCMC_obj$Trajectory[time_id ,row,ids]/scale,1,function(x){
+      return(quantile(x,qt1))
+    }
+    )
+    lower = apply(MCMC_obj$Trajectory[time_id ,row,ids]/scale,1,function(x){
+      return(quantile(x,qt2))
+    })
+    # lines(MCMC_obj$Trajectory[,1,1],midcur + qt * midSd,lty=2,
+    #      col=col,lwd=2)
+
+    #lines(MCMC_obj$Trajectory[,1,1],midcur - qt * midSd,lty=2,
+    #     col=col,lwd=2)
+  }
+  if(fill == T){
+    polygon(x = c(MCMC_obj$Trajectory[time_id ,1,1],rev(MCMC_obj$Trajectory[time_id ,1,1])),
+            y = c(upper,rev(lower)),col = fill_col,border = NA)
+  }else{
+    polygon(x = c(MCMC_obj$Trajectory[time_id ,1,1],rev(MCMC_obj$Trajectory[time_id ,1,1])),
+            y = c(upper,rev(lower)), col = "black",border = F,angle = c(45,-45),density = c(40))
+  }
+}
+
 
 
 
@@ -566,6 +623,10 @@ R0_compare = function(RCI, param, x_r, x_i){
   return(list(MAD = MAD, MCIW = MCIW))
 }
 
+
+
+
+##################
 random_Incidence_pred_stat = function(MCMC_obj, idx, thin, incid = T){
   t = SIR_incidence_Traj(MCMC_obj$Trajectory[,,1],1:dim(MCMC_obj$Trajectory)[1]-1)[,1]
 
@@ -575,14 +636,16 @@ random_Incidence_pred_stat = function(MCMC_obj, idx, thin, incid = T){
   if(incid == T){
     rhosMX = matrix(rep(MCMC_obj$incid_par[idx,1], each = length(t)), ncol = length(idx))
     phiMX = MCMC_obj$incid_par[idx,2]
+    incid_MX = incid_MX * rhosMX
   }else{
-    rho_pr = MCMC_obj$MCMC_setting$prior$rho_pr
-    phi_pr = MCMC_obj$MCMC_setting$prior$phi_pr
-    rhosMX = sigmoid(rnorm(length(idx),rho_pr[1], rho_pr[2]))
-    phiMX =  rlnorm(length(idx),phi_pr[1], phi_pr[2])
+    #rho_pr = MCMC_obj$MCMC_setting$prior$rho_pr
+    #phi_pr = MCMC_obj$MCMC_setting$prior$phi_pr
+    #rhosMX = sigmoid(rnorm(length(idx),rho_pr[1], rho_pr[2]))
+    #phiMX =  rlnorm(length(idx),phi_pr[1], phi_pr[2])
   }
-  incid_MX = incid_MX * rhosMX
-  #incid_MX = pmax(incid_MX, 0)
+  #incid_MX = incid_MX * rhosMX
+
+  #sample_MX = incid_MX
   sample_MX = matrix(ncol = length(idx), nrow = length(t))
   for(i in 1:length(idx)){
     sample_MX[,i] = sapply(incid_MX[,i], function(x){
@@ -590,6 +653,7 @@ random_Incidence_pred_stat = function(MCMC_obj, idx, thin, incid = T){
     })
   }
 
+  ##################
   mid = apply(sample_MX,1,function(x){
     return(quantile(x,0.5,na.rm = T))
   })
@@ -677,6 +741,14 @@ pref_sample_intense = function(MCMC_obj, idx, thin){
   return(list(mid = mid, upper = upper, lower = lower))
 }
 
+TrajQtl = function(MCMC_obj, idx, thin, col_id){
+    q = apply(MCMC_obj$Trajectory[,col_id, idx / thin], 1, function(x) quantile(x, c(0.025, 0.5,0.975)))
+    t = MCMC_obj$Trajectory[,1,1]
+    res = rbind(t, q)
+    return(t(res))
+}
+
+
 add_interval = function(up, mid,down, time, col1 = rgb(0,0,1,0.23),col2 = "red", lwd = 2, lty = 2){
   polygon(c(time, rev(time)),c(up, rev(down)), col = col1, border = NA)
   lines(time, mid, col = col2, lwd = 2, lty = lty)
@@ -691,6 +763,6 @@ log_predictive = function(truth, ids, sampleMX, rule){
 }
 
 rules = function(x){
-  return(list(up = x + 15,down = max(x - 15,0)))
+  return(list(up = x + 20,down = max(x - 20,0)))
 }
 

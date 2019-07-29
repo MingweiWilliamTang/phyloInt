@@ -527,8 +527,10 @@ General_MCMC_Pref_ESlice = function(coal_obs,times,t_correct,N,gridsize=1000, ni
   MCMC_obj = MCMC_initialize_Pref(MCMC_setting, enable = enable)
 
   prlist = list(a = prior[[1]][1:2], b = prior[[2]][1:2],c = prior[[3]][1:2],d = prior[[5]][1:2])
-  params_pref = matrix(nrow = niter, ncol = 3)
-
+  params_pref = NULL
+  if(enable[2]){
+    params_pref = matrix(nrow = niter, ncol = 3)
+  }
   if (MCMC_setting$likelihood == "volz") { # volz likelihood model
 
     params = matrix(nrow = niter, ncol = nparam + MCMC_obj$p)
@@ -624,7 +626,9 @@ General_MCMC_Pref_ESlice = function(coal_obs,times,t_correct,N,gridsize=1000, ni
       tjs[,,as.integer(i/thin)] = MCMC_obj$LatentTraj
     }
     params[i,] = MCMC_obj$par
-    params_pref[i,] = MCMC_obj$pref_par
+    if(enable[2]){
+      params_pref[i,] = MCMC_obj$pref_par
+    }
     l[i] = MCMC_obj$logOrigin
     l1[i] = MCMC_obj$coalLog
     l3[i] = MCMC_obj$PrefLog
